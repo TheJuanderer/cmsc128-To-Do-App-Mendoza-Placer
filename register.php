@@ -1,4 +1,8 @@
-<?php 
+<?php
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
     include 'DBConnector.php';
     include 'query_helpers.php';
     include 'user_helpers.php';
@@ -43,10 +47,10 @@
             $taken = find_user_conflicts($conn, $username, $email);
             if ($taken['name']) {
                 $errors['name'] = "This username is already taken. Please choose another.";
-            } 
+            }
             if ($taken['email']) {
                 $errors['email'] = "An account with this email address already exists.";
-            } 
+            }
         }
 
         // Save account if validation passes
@@ -64,48 +68,78 @@
         }
     }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register Account</title>
+    <title>Create Account</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="page">
+    <div class="page auth-page">
+        <h1>Create an account</h1>
+        
+
+        <?php if (!empty($errors['general'])): ?>
+            <div class="alert alert-error" role="alert"><?= htmlspecialchars($errors['general']) ?></div>
+        <?php endif; ?>
+
         <div class="form-card">
             <form method="POST" action="register.php" novalidate>
-                <!-- Username -->
-                <label for="reg_name">Username</label>
-                <input id="reg_name" name="reg_name" type="text" value="<?= htmlspecialchars($username); ?>">
-                <div class="field-error" style="color: red;"><?= htmlspecialchars($errors['name'] ?? ''); ?></div>
+                <div class="field">
+                    <label for="reg_name">Username</label>
+                    <input id="reg_name" name="reg_name" type="text"
+                           value="<?= htmlspecialchars($username) ?>"
+                           autocomplete="username" autofocus
+                           class="<?= isset($errors['name']) ? 'has-error' : '' ?>">
+                    <?php if (isset($errors['name'])): ?>
+                        <div class="field-error"><?= htmlspecialchars($errors['name']) ?></div>
+                    <?php else: ?>
+                        <div class="field-hint">3-30 characters: letters, numbers, or underscores.</div>
+                    <?php endif; ?>
+                </div>
 
-                <!-- Email -->
-                <label for="reg_email">Email</label>
-                <input id="reg_email" name="reg_email" type="email" value="<?= htmlspecialchars($email); ?>">
-                <div class="field-error" style="color: red;"><?= htmlspecialchars($errors['email'] ?? ''); ?></div>
+                <div class="field">
+                    <label for="reg_email">Email</label>
+                    <input id="reg_email" name="reg_email" type="email"
+                           value="<?= htmlspecialchars($email) ?>"
+                           autocomplete="email"
+                           class="<?= isset($errors['email']) ? 'has-error' : '' ?>">
+                    <?php if (isset($errors['email'])): ?>
+                        <div class="field-error"><?= htmlspecialchars($errors['email']) ?></div>
+                    <?php endif; ?>
+                </div>
 
-                <!-- Password -->
-                <label for="reg_password">Password</label>
-                <input id="reg_password" name="reg_password" type="password">
-                <div class="field-error" style="color: red;"><?= htmlspecialchars($errors['password'] ?? ''); ?></div>
+                <div class="field">
+                    <label for="reg_password">Password</label>
+                    <input id="reg_password" name="reg_password" type="password"
+                           autocomplete="new-password"
+                           class="<?= isset($errors['password']) ? 'has-error' : '' ?>">
+                    <?php if (isset($errors['password'])): ?>
+                        <div class="field-error"><?= htmlspecialchars($errors['password']) ?></div>
+                    <?php else: ?>
+                        <div class="field-hint">At least 8 characters.</div>
+                    <?php endif; ?>
+                </div>
 
-                <!-- Confirm Password -->
-                <label for="reg_confirm">Confirm Password</label>
-                <input id="reg_confirm" name="reg_confirm" type="password">
-                <div class="field-error" style="color: red;"><?= htmlspecialchars($errors['confirm'] ?? ''); ?></div>
+                <div class="field">
+                    <label for="reg_confirm">Confirm password</label>
+                    <input id="reg_confirm" name="reg_confirm" type="password"
+                           autocomplete="new-password"
+                           class="<?= isset($errors['confirm']) ? 'has-error' : '' ?>">
+                    <?php if (isset($errors['confirm'])): ?>
+                        <div class="field-error"><?= htmlspecialchars($errors['confirm']) ?></div>
+                    <?php endif; ?>
+                </div>
 
-                <?php if (!empty($errors['general'])): ?>
-                    <div class="field-error" style="color: red; margin-top: 5px;"><?= htmlspecialchars($errors['general']); ?></div>
-                <?php endif; ?>
-
-                <br>
-                <button type="submit">Create Account</button>
-                <p><a href="login.php">Already have an account? Log in</a></p>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-block">Create account</button>
+                </div>
             </form>
         </div>
+
+        <p class="auth-switch">Already have an account? <a href="login.php">Log in</a></p>
     </div>
 </body>
 </html>
