@@ -323,3 +323,24 @@ a { color: var(--accent); }
   .task-row { flex-wrap: wrap; }
   .toolbar { gap: 8px; }
 }
+
+/* Auth pages (login / register) */
+.auth-page { max-width: 440px; padding-top: 72px; }
+.auth-page h1 { font-size: 30px; margin-bottom: 6px; }
+.auth-sub { color: var(--ink-soft); font-size: 14px; margin: 0 0 28px; }
+
+.auth-page .form-card { padding: 32px 28px; }
+.auth-page .field:last-of-type { margin-bottom: 0; }
+.auth-page .field input.has-error { border-color: var(--danger); }
+.auth-page .field-error { margin-top: 6px; }
+.field-hint { color: var(--ink-soft); font-size: 12px; margin-top: 5px; }
+
+.btn-block { width: 100%; justify-content: center; padding: 12px 16px; font-size: 15px; }
+.auth-page .form-actions { flex-direction: column; margin-top: 24px; }
+
+.auth-switch {
+  text-align: center;
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 20px 0 0;
+}
