@@ -39,112 +39,116 @@
 
     // function used for Creating, Updating and Deleting tasks
     function execute ($conn, $sql) {
-        $conn->query($sql);
+        $result = $conn->query($sql);
         return $result !== false;
     }
 
-    // Inserts a new task using secure prepared statements to prevent SQL injection.
-    function insert_task($conn, $title, $due_date, $priority_id, $category_id) {
-        $sql = "INSERT INTO `Task` (`title`, `due_date`, `priority_id`, `category_id`)
-                VALUES (?, ?, ?, ?)";
+    // Inserts a new task for a specific user.
+function insert_task($conn, $user_id, $title, $due_date, $priority_id, $category_id) {
+    $sql = "INSERT INTO `Task` (`user_id`, `title`, `due_date`, `priority_id`, `category_id`)
+            VALUES (?, ?, ?, ?, ?)";
 
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            return false;
-        }
-
-        // Bind parameters ("ssii" = string, string, integer, integer)
-        $stmt->bind_param("ssii", $title, $due_date, $priority_id, $category_id);
-        $ok = $stmt->execute();
-        $stmt->close();
-
-        return $ok;
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        return false;
     }
 
-    // Retrieves a single active (non-deleted) task by its unique ID.
-    function get_task($conn, $task_id) {
-        $sql = "SELECT * FROM `Task` WHERE `task_id` = ? AND `deleted_at` IS NULL";
+    // "issii" = int, string, string, int, int
+    $stmt->bind_param("issii", $user_id, $title, $due_date, $priority_id, $category_id);
+    $ok = $stmt->execute();
+    $stmt->close();
 
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            return null;
-        }
+    return $ok;
+}
 
-        $stmt->bind_param("i", $task_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $task = $result->fetch_assoc();
-        $stmt->close();
+// Retrieves a single active task, only if it belongs to the user.
+function get_task($conn, $task_id, $user_id) {
+    $sql = "SELECT * FROM `Task`
+            WHERE `task_id` = ? AND `user_id` = ? AND `deleted_at` IS NULL";
 
-        return $task ?: null;
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        return null;
     }
 
-    // Updates existing task fields using a prepared statement.
-    function update_task($conn, $task_id, $title, $due_date, $priority_id, $category_id) {
-        $sql = "UPDATE `Task`
-                SET `title` = ?, `due_date` = ?, `priority_id` = ?, `category_id` = ?
-                WHERE `task_id` = ?";
+    $stmt->bind_param("ii", $task_id, $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $task = $result->fetch_assoc();
+    $stmt->close();
 
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            return false;
-        }
+    return $task ?: null;
+}
 
-        // Bind parameters ("ssiii" = string, string, int, int, int)
-        $stmt->bind_param("ssiii", $title, $due_date, $priority_id, $category_id, $task_id);
-        $ok = $stmt->execute();
-        $stmt->close();
+// Updates a task, only if it belongs to the user.
+function update_task($conn, $task_id, $user_id, $title, $due_date, $priority_id, $category_id) {
+    $sql = "UPDATE `Task`
+            SET `title` = ?, `due_date` = ?, `priority_id` = ?, `category_id` = ?
+            WHERE `task_id` = ? AND `user_id` = ?";
 
-        return $ok;
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        return false;
     }
 
-    // Soft delete: sets deleted_at instead of removing the row; restore_task() can undo it.
-    function soft_delete_task($conn, $task_id) {
-        $sql = "UPDATE `Task` SET `deleted_at` = NOW() WHERE `task_id` = ?";
+    // "ssiiii" = string, string, int, int, int, int
+    $stmt->bind_param("ssiiii", $title, $due_date, $priority_id, $category_id, $task_id, $user_id);
+    $ok = $stmt->execute();
+    $stmt->close();
 
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            return false;
-        }
+    return $ok;
+}
 
-        $stmt->bind_param("i", $task_id);
-        $ok = $stmt->execute();
-        $stmt->close();
+// Soft delete, only if the task belongs to the user.
+function soft_delete_task($conn, $task_id, $user_id) {
+    $sql = "UPDATE `Task` SET `deleted_at` = NOW()
+            WHERE `task_id` = ? AND `user_id` = ?";
 
-        return $ok;
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        return false;
     }
 
-    // Restores a soft-deleted task by clearing the deleted_at timestamp.
-    function restore_task($conn, $task_id) {
-        $sql = "UPDATE `Task` SET `deleted_at` = NULL WHERE `task_id` = ?";
+    $stmt->bind_param("ii", $task_id, $user_id);
+    $ok = $stmt->execute();
+    $stmt->close();
 
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            return false;
-        }
+    return $ok;
+}
 
-        $stmt->bind_param("i", $task_id);
-        $ok = $stmt->execute();
-        $stmt->close();
+// Restores a soft-deleted task, only if it belongs to the user.
+function restore_task($conn, $task_id, $user_id) {
+    $sql = "UPDATE `Task` SET `deleted_at` = NULL
+            WHERE `task_id` = ? AND `user_id` = ?";
 
-        return $ok;
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        return false;
     }
 
-    // Toggles a task's completion status (is_done) between true (1) and false (0).
-    function toggle_task_done($conn, $task_id) {
-        $sql = "UPDATE `Task` SET `is_done` = NOT `is_done` WHERE `task_id` = ?";
+    $stmt->bind_param("ii", $task_id, $user_id);
+    $ok = $stmt->execute();
+    $stmt->close();
 
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            return false;
-        }
+    return $ok;
+}
 
-        $stmt->bind_param("i", $task_id);
-        $ok = $stmt->execute();
-        $stmt->close();
+// Toggles is_done, only if the task belongs to the user.
+function toggle_task_done($conn, $task_id, $user_id) {
+    $sql = "UPDATE `Task` SET `is_done` = NOT `is_done`
+            WHERE `task_id` = ? AND `user_id` = ?";
 
-        return $ok;
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        return false;
     }
+
+    $stmt->bind_param("ii", $task_id, $user_id);
+    $ok = $stmt->execute();
+    $stmt->close();
+
+    return $ok;
+}
 
 
 ?>

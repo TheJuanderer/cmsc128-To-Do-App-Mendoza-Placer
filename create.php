@@ -1,6 +1,18 @@
 <?php
-    include 'DBConnector.php';
-    include 'query_helpers.php';
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    include_once 'DBConnector.php';
+    include_once 'query_helpers.php';
+
+    // Must be logged in to add tasks
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+
+    $user_id = (int) $_SESSION['user_id'];
 
     // Initialize variables to store form input values and error messages
     $errors = [];
@@ -57,7 +69,7 @@
             $due_date_mysql = date('Y-m-d H:i:s', $due_date_timestamp);
 
             // Call custom helper function to insert the task into the database
-            $ok = insert_task($conn, $title, $due_date_mysql, (int) $priority_id, (int) $category_id);
+            $ok = insert_task($conn, $user_id, $title, $due_date_mysql, (int) $priority_id, (int) $category_id);
 
             if ($ok) {
                 // Set a success flash message and redirect to the main listing page
