@@ -51,5 +51,5 @@ This is the file that enforces "only a specific account's tasks are shown"
 
 `register.php`	No session needed (public page).	Creates the account
 
-
+CRUD operations -> for all the CRUD operations everytime you do an operation it checks whether there is a `$_SESSION['user_id']` that exists if not, you get booted out back to the login page
 
