@@ -21,6 +21,8 @@ $initial = strtoupper(mb_substr($user['user_name'], 0, 1));
                     <strong><?= htmlspecialchars($user['user_name']) ?></strong>
                     <span><?= htmlspecialchars($user['user_email']) ?></span>
                 </div>
+                <a href="index.php" class="user-menu-item">My tasks</a>
+                <a href="profile.php" class="user-menu-item">Profile</a>
                 <!-- Logging out changes state, so it is a POST form, not a plain link -->
                 <form method="POST" action="logout.php">
                     <button type="submit" class="user-menu-item user-menu-logout">Log out</button>
