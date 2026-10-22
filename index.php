@@ -13,6 +13,18 @@
     }
 
     $user_id = (int) $_SESSION['user_id'];
+
+    $stmt_user = $conn->prepare("SELECT user_id, user_name, user_email FROM `User` WHERE user_id = ? AND deleted_at IS NULL");
+    $stmt_user->bind_param("i", $user_id);
+    $stmt_user->execute();
+    $user = $stmt_user->get_result()->fetch_assoc();
+    $stmt_user->close();
+
+    if (!$user) {
+        unset($_SESSION['user_id']);
+        header("Location: login.php");
+        exit();
+    }
     
 
     // filters (whitelisted / cast to int, safe to concatenate)
@@ -99,10 +111,12 @@
     <title>To-Do List</title>
 </head>
 <body>
+    <?php include 'navbar.php'; ?>
+    
     <div class="page">
         <div class="page-header">
 
-            <h1>To-Do List</h1>
+            <h1>My Tasks</h1>
             
             <!-- add task button -->
             <a href="create.php" class="btn btn-primary">+ Add task</a>

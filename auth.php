@@ -32,7 +32,7 @@ function require_login($conn) {
 // Login for already registered
 function redirect_if_logged_in($conn) {
     if (current_user($conn) !== null) {
-        header('Location: login_test_page.php');
+        header('Location: index.php');
         exit();
     }
 }
