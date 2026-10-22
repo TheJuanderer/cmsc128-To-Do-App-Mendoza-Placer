@@ -42,15 +42,15 @@
 
         // Validate the due date and time components
         if ($due_date_date === '') {
-            $errors['due_date'] = 'Pick a due date.';
+            $errors['due_date_date'] = 'Pick a due date.';
         } elseif ($due_date_time === '') {
-            $errors['due_date'] = 'Enter a due time (e.g. 11:59 PM).';
+            $errors['due_date_time'] = 'Enter a due time (e.g. 11:59 PM).';
         } elseif (!preg_match($time_pattern, $due_date_time)) {
-            $errors['due_date'] = 'Enter a time like 11:59 PM - include AM or PM.';
+            $errors['due_date_time'] = 'Enter a time like 11:59 PM - include AM or PM.';
         } else {
             $due_date_timestamp = strtotime("$due_date_date $due_date_time");
             if ($due_date_timestamp === false) {
-                $errors['due_date'] = 'That date/time isn\'t valid.';
+                $errors['due_date_time'] = 'That date/time isn\'t valid.';
             }
         }
 
@@ -121,6 +121,7 @@
                 <div class="field">
                     <label for="due_date_date">Due date</label>
                     <input type="date" name="due_date_date" id="due_date_date" value="<?= htmlspecialchars($due_date_date) ?>">
+                    <?php if (!empty($errors['due_date_date'])): ?><div class="field-error"><?= $errors['due_date_date'] ?></div><?php endif; ?>
                 </div>
 
                 <!-- input due time with proper input checking -->
@@ -136,7 +137,7 @@
                         title="Enter a time like 11:59 PM - AM or PM is required."
                         autocomplete="off"
                     >
-                    <?php if (!empty($errors['due_date'])): ?><div class="field-error"><?= $errors['due_date'] ?></div><?php endif; ?>
+                    <?php if (!empty($errors['due_date_time'])): ?><div class="field-error"><?= $errors['due_date_time'] ?></div><?php endif; ?>
                 </div>
 
                 <!-- dynamic priority dropdown -->
