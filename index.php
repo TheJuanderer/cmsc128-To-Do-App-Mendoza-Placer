@@ -1,7 +1,19 @@
 <?php
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
 
     include 'DBConnector.php';
     include 'query_helpers.php';
+
+    // Must be logged in to see tasks
+    if (!isset($_SESSION['user_id'])) {
+        header("Location: login.php");
+        exit();
+    }
+
+    $user_id = (int) $_SESSION['user_id'];
+    
 
     // filters (whitelisted / cast to int, safe to concatenate)
     $category_id = isset($_GET['category_id']) && $_GET['category_id'] !== ''
@@ -22,7 +34,7 @@
         ? $_GET['sort']
         : 'due_date';
 
-    $where = "WHERE Task.deleted_at IS NULL";
+    $where = "WHERE Task.deleted_at IS NULL AND Task.user_id = $user_id";
     if ($category_id !== null) {
         $where .= " AND Task.category_id = $category_id";
     }

@@ -1,10 +1,22 @@
 <?php
-    include 'DBConnector.php';
-    include 'query_helpers.php';
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    include_once 'DBConnector.php';
+    include_once 'query_helpers.php';
+
+    // Must be logged in to add tasks
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+
+    $user_id = (int) $_SESSION['user_id'];
 
     // Retrieve the task ID from GET (URL) or POST (form submission), defaulting to 0
     $task_id = intval($_GET['id'] ?? $_POST['task_id'] ?? 0);
-    $task = get_task($conn, $task_id);
+    $task = get_task($conn, $task_id, $user_id);
 
     // If the task does not exist, redirect the user back to the main list
     if (!$task) {
@@ -65,7 +77,7 @@
             $due_date_mysql = date('Y-m-d H:i:s', $due_date_timestamp);
 
             // Call custom helper function to insert the task into the database
-            $ok = update_task($conn, $task_id, $title, $due_date_mysql, (int) $priority_id, (int) $category_id);
+            $ok = update_task($conn, $task_id, $user_id, $title, $due_date_mysql, (int) $priority_id, (int) $category_id);
 
             if ($ok) {
                 // Set a success flash message and redirect to the main listing page
