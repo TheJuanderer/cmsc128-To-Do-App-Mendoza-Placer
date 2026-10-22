@@ -8,7 +8,7 @@ include 'query_helpers.php';
 
 // If already logged in, skip the login page
 if (isset($_SESSION['user_id'])) {
-    header("Location: login_test_page.php");
+    header("Location: index.php");
     exit();
 }
 
